@@ -15,7 +15,8 @@ What is compared, per HDU:
 
 Column differences that are legitimate FITS semantics are normalized rather
 than skipped: fixed-width strings are right-stripped (``strip=True`` is the
-public default) and scaled/null sentinels are compared as NaN.
+public default), scaled/null sentinels are compared as NaN, and a scaled image
+is compared with the precision its offset allows (see ``_scaled_float_atol``).
 """
 
 from __future__ import annotations
@@ -55,6 +56,30 @@ HUGE_FILE = 512 * 1024**2
 #: Rows compared at each end of a table.
 ROWS = 2000
 
+F32_EPS = float(np.finfo(np.float32).eps)
+
+
+def _scaled_float_atol(zero: float, scale: float, expected: np.ndarray) -> float:
+    """Slack for two float renderings of the same scaled integer image.
+
+    astropy renders ``BSCALE``/``BZERO`` images in ``float32`` and applies the
+    offset in that precision; torchfits applies it in double and casts once.
+    With a large offset the operands themselves round differently, so the two
+    pixels disagree by up to ``eps32 * (|BZERO| + |BSCALE * q|)`` — 0.008 for
+    the CFHT frames whose ``BZERO`` is 33 323.4, while the pixel is ~576. That
+    is arithmetic order, not a wrong value: a dropped or doubled offset, or a
+    wrong scale, is orders of magnitude larger than this bound.
+
+    ``zero`` and ``scale`` come from the caller because astropy removes the two
+    cards from an image header once the data has been scaled.
+    """
+    if zero == 0.0 and scale == 1.0:
+        return 1e-6
+    values = np.asarray(expected, dtype=np.float64)
+    # ``values - zero`` is ``BSCALE * q``: the other operand of the sum.
+    scaled = float(np.max(np.abs(values - zero))) if values.size else 0.0
+    return F32_EPS * (abs(zero) + scaled)
+
 
 def _sample_indices(hdul: Any, path: Path) -> list[int]:
     """HDUs worth opening: every one, unless each open costs a decompression."""
@@ -65,8 +90,13 @@ def _sample_indices(hdul: Any, path: Path) -> list[int]:
     tables = [
         i for i, h in enumerate(hdul) if isinstance(h, (fits.BinTableHDU, fits.TableHDU))
     ]
+    # Header-only test for data: touching ``hdu.data`` here would decompress
+    # every extension and let astropy consume BSCALE/BZERO from the header
+    # before the caller can read them.
     images = [
-        i for i, h in enumerate(hdul) if h.data is not None and i not in tables
+        i
+        for i, h in enumerate(hdul)
+        if i not in tables and h.header.get("NAXIS", 0) > 0
     ]
     if tables:
         indices.append(tables[0])
@@ -147,7 +177,8 @@ def test_image_pixels_match_astropy(source: dict[str, Any]) -> None:
         image_indices = [
             index
             for index, hdu in enumerate(hdul)
-            if hdu.data is not None and not isinstance(hdu, fits.BinTableHDU | fits.TableHDU)
+            if hdu.header.get("NAXIS", 0) > 0
+            and not isinstance(hdu, fits.BinTableHDU | fits.TableHDU)
         ]
         if not image_indices:
             pytest.skip("no image HDU")
@@ -157,7 +188,12 @@ def test_image_pixels_match_astropy(source: dict[str, Any]) -> None:
                 image_indices[0]
             ]
         for index in image_indices:
-            expected = np.asarray(hdul[index].data)
+            hdu = hdul[index]
+            # Capture the scaling before touching ``data``: astropy consumes
+            # BSCALE/BZERO from the image header when it applies them.
+            zero = float(hdu.header.get("BZERO", 0.0) or 0.0)
+            scale = float(hdu.header.get("BSCALE", 1.0) or 1.0)
+            expected = np.asarray(hdu.data)
             nbytes = expected.size * expected.dtype.itemsize
             if nbytes > FULL_IMAGE_LIMIT:
                 y0 = max(0, expected.shape[0] // 2 - 128)
@@ -176,7 +212,7 @@ def test_image_pixels_match_astropy(source: dict[str, Any]) -> None:
                     got.astype(np.float64),
                     expected.astype(np.float64),
                     rtol=1e-6,
-                    atol=1e-6,
+                    atol=_scaled_float_atol(zero, scale, expected),
                     equal_nan=True,
                     err_msg=f"hdu {index}",
                 )

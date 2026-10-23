@@ -47,7 +47,7 @@ smokes and behaviour replays referenced by this matrix are inventoried in
 | **Multi-Extension (MEF)** | **Supported** | `astropy.io.fits.HDUList` | HDU iteration by integer index or extension name (`hdul["SCI"]`), lazy metadata scanning. |
 | **Windowed Cutout Reads** | **Supported** | `astropy.io.fits`, `fitsio` | Fast pixel sub-region extraction via `read_subset` and zero-overhead `open_subset_reader`. |
 | **Unsigned Integers (`uint16`/`uint32`)** | **Supported** | `BZERO` convention | Vectorized SIMD decoding of unsigned integers into native PyTorch integer tensors. |
-| **Physical Scaling (`BSCALE`/`BZERO`)** | **Supported** | FITS Standard | Automatically scales raw detector counts to physical float32/float64 values. |
+| **Physical Scaling (`BSCALE`/`BZERO`)** | **Supported** | FITS Standard | Automatically scales raw detector counts to physical float32/float64 values. The sum is applied in double precision before the final cast; a large `BZERO` therefore matches astropy to float32 rounding (a few 1e-6 relative on a real MegaCam frame), not bit-for-bit. |
 
 ---
 
