@@ -20,11 +20,18 @@ endif()
 find_package(ZLIB REQUIRED)
 
 get_filename_component(TORCHFITS_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
-set(CFITSIO_SOURCE_DIR "${TORCHFITS_REPO_ROOT}/extern/cfitsio")
-if(NOT EXISTS "${CFITSIO_SOURCE_DIR}/CMakeLists.txt")
+# Explicit root wins; otherwise look in this repo (historical layout) and then
+# in a sibling torchfits checkout, which is where the vendored tree lives now.
+if(DEFINED TORCHFITS_CFITSIO_ROOT AND EXISTS "${TORCHFITS_CFITSIO_ROOT}/CMakeLists.txt")
+  set(CFITSIO_SOURCE_DIR "${TORCHFITS_CFITSIO_ROOT}")
+elseif(EXISTS "${TORCHFITS_REPO_ROOT}/extern/cfitsio/CMakeLists.txt")
+  set(CFITSIO_SOURCE_DIR "${TORCHFITS_REPO_ROOT}/extern/cfitsio")
+elseif(EXISTS "${TORCHFITS_REPO_ROOT}/../torchfits/extern/cfitsio/CMakeLists.txt")
+  set(CFITSIO_SOURCE_DIR "${TORCHFITS_REPO_ROOT}/../torchfits/extern/cfitsio")
+else()
   message(FATAL_ERROR
-    "Vendored CFITSIO missing at ${CFITSIO_SOURCE_DIR}. Run: "
-    "./extern/vendor.sh --cfitsio-version extern/VERSIONS.txt")
+    "Vendored CFITSIO not found. Pass -DTORCHFITS_CFITSIO_ROOT=<torchfits>/extern/cfitsio "
+    "or run ./extern/vendor.sh --cfitsio-version extern/VERSIONS.txt in a torchfits checkout.")
 endif()
 
 # Match torchfits cpp_src vendored build flags (static, no utils/tests).
@@ -40,4 +47,9 @@ add_executable(bench_cfitsio_direct bench_cfitsio_direct.c)
 target_link_libraries(bench_cfitsio_direct PRIVATE cfitsio ZLIB::ZLIB)
 target_include_directories(bench_cfitsio_direct PRIVATE "${CFITSIO_SOURCE_DIR}")
 
-install(TARGETS bench_cfitsio_direct RUNTIME DESTINATION bin)
+# Independent value oracle: pure C, no Python, used by tests/test_cfitsio_oracle.py.
+add_executable(dump_cfitsio_values dump_cfitsio_values.c)
+target_link_libraries(dump_cfitsio_values PRIVATE cfitsio ZLIB::ZLIB)
+target_include_directories(dump_cfitsio_values PRIVATE "${CFITSIO_SOURCE_DIR}")
+
+install(TARGETS bench_cfitsio_direct dump_cfitsio_values RUNTIME DESTINATION bin)
