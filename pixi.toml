@@ -36,6 +36,8 @@ corpus-list = "python scripts/fetch_corpus.py --tier full --list"
 corpus-verify = "python scripts/fetch_corpus.py --tier full --verify"
 corpus-test = "pytest tests/test_corpus_manifest.py tests/test_corpus_parity.py tests/test_operation_matrix.py tests/test_write_parity.py -q"
 oracle-test = "pytest tests/test_cfitsio_oracle.py -q"
+# Upstream behaviour replays: fitsio, astropy, CFITSIO, CCfits, EleFits, qfits, sfitsio.
+replay-test = "pytest tests/test_replay_*.py tests/test_upstream_parity_inventory.py -q"
 # Local suites use this env. The subject is an installed torchfits wheel, not a
 # build of this repo. Set TORCHFITS_BENCH_ENV to select another Pixi env.
 bench-fits = "python benchmarks/bench_all.py --profile user --fits-only"

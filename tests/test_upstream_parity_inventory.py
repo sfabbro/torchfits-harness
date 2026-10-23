@@ -4,7 +4,6 @@ import json
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -17,7 +16,15 @@ def test_upstream_parity_manifest_references_existing_local_paths() -> None:
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     upstreams = {entry["upstream"] for entry in manifest}
-    assert {"fitsio", "astropy.io.fits"}.issubset(upstreams)
+    assert {
+        "fitsio",
+        "astropy.io.fits",
+        "CFITSIO",
+        "CCfits",
+        "EleFits",
+        "qfits",
+        "sfitsio",
+    }.issubset(upstreams)
 
     for entry in manifest:
         for relpath in entry["local"].get("tests", []):
@@ -28,6 +35,27 @@ def test_upstream_parity_manifest_references_existing_local_paths() -> None:
             assert (ROOT / relpath).exists(), (
                 f"Missing replay path from manifest: {relpath}"
             )
+
+
+def test_every_replay_test_is_registered_in_the_manifest() -> None:
+    """A replay suite nobody inventories is invisible to the parity matrix."""
+    manifest = json.loads(
+        (ROOT / "benchmarks" / "replays" / "upstream_sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    registered = {
+        relpath for entry in manifest for relpath in entry["local"].get("replays", [])
+    }
+    on_disk = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "tests").glob("test_replay_*.py")
+    }
+    assert on_disk, "no replay suites found"
+    assert on_disk == registered, (
+        f"unregistered replays: {sorted(on_disk - registered)}; "
+        f"stale manifest entries: {sorted(registered - on_disk)}"
+    )
 
 
 def test_major_format_parity_matrix_has_explicit_statuses() -> None:

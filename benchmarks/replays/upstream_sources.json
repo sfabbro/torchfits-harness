@@ -3,14 +3,49 @@
     "upstream": "fitsio",
     "local": {
       "tests": ["tests/test_fitsio_upstream_smoke.py"],
-      "replays": []
+      "replays": ["tests/test_replay_fitsio.py"]
     }
   },
   {
     "upstream": "astropy.io.fits",
     "local": {
       "tests": ["tests/test_astropy_upstream_smoke.py"],
-      "replays": []
+      "replays": ["tests/test_replay_astropy.py"]
+    }
+  },
+  {
+    "upstream": "CFITSIO",
+    "local": {
+      "tests": ["tests/test_cfitsio_oracle.py"],
+      "replays": ["tests/test_replay_cfitsio.py"]
+    }
+  },
+  {
+    "upstream": "CCfits",
+    "local": {
+      "tests": [],
+      "replays": ["tests/test_replay_ccfits.py"]
+    }
+  },
+  {
+    "upstream": "EleFits",
+    "local": {
+      "tests": [],
+      "replays": ["tests/test_replay_elefits.py"]
+    }
+  },
+  {
+    "upstream": "qfits",
+    "local": {
+      "tests": [],
+      "replays": ["tests/test_replay_qfits.py"]
+    }
+  },
+  {
+    "upstream": "sfitsio",
+    "local": {
+      "tests": [],
+      "replays": ["tests/test_replay_sfitsio.py"]
     }
   }
 ]

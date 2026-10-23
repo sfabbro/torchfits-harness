@@ -16,7 +16,7 @@ Status values:
 - **Out of Scope**: High-level astronomy models (coordinates, cosmology, units) that belong in dedicated domain packages.
 
 Every major format family has an explicit status below. The upstream parity
-smokes referenced by this matrix are inventoried in
+smokes and behaviour replays referenced by this matrix are inventoried in
 `benchmarks/replays/upstream_sources.json` and checked by
 `tests/test_upstream_parity_inventory.py`.
 
