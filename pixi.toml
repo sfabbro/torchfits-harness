@@ -20,6 +20,7 @@ pytorch = ">=2.14,<2.15"
 pip = ">=24"
 astroquery = ">=0.4.11,<0.5"
 pytest-cov = ">=7.1.0,<8"
+gcovr = ">=8"
 
 [activation.env]
 PYTHONNOUSERSITE = "1"
@@ -38,6 +39,20 @@ corpus-test = "pytest tests/test_corpus_manifest.py tests/test_corpus_parity.py 
 oracle-test = "pytest tests/test_cfitsio_oracle.py -q"
 # Upstream behaviour replays: fitsio, astropy, CFITSIO, CCfits, EleFits, qfits, sfitsio.
 replay-test = "pytest tests/test_replay_*.py tests/test_upstream_parity_inventory.py -q"
+# Public-surface gate: every exported symbol must be mentioned by a test.
+surface-report = "python scripts/surface_report.py"
+surface-update = "python scripts/surface_report.py --update --markdown docs/public-surface.md"
+# Contract gates: the corpus benchmark, the CLI, the public surface and the
+# executed docs tour. They skip the corpus-dependent cases when it is absent.
+contract-test = "pytest tests/test_bench_corpus.py tests/test_cli_suite.py tests/test_public_surface.py tests/test_tour.py -q"
+# Line coverage of the installed torchfits wheel (no source, no compilation).
+coverage-python = "pytest tests -q --cov=torchfits --cov-report=term:skip-covered --cov-report=html:reports/python-coverage"
+# C/C++ coverage needs an instrumented build; see docs/coverage.md.
+coverage-cpp = "bash scripts/cpp_coverage.sh"
+# Real archive files: same three readers, same file, one interleaved timer.
+bench-corpus = "python -m benchmarks.bench_corpus"
+# Per-call Python overhead over the nanobind bindings (docs/api-overhead.md).
+api-overhead = "python scripts/api_overhead.py"
 # Local suites use this env. The subject is an installed torchfits wheel, not a
 # build of this repo. Set TORCHFITS_BENCH_ENV to select another Pixi env.
 bench-fits = "python benchmarks/bench_all.py --profile user --fits-only"

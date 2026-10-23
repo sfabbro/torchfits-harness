@@ -35,3 +35,5 @@ jobs:
         run: pytest tests/test_fitsio_upstream_smoke.py tests/test_astropy_upstream_smoke.py tests/test_layout.py tests/test_verify_vs_fitsverify.py -q
       - name: Benchmark smoke
         run: python benchmarks/bench_cpp_backend.py
+      - name: Contract gates (CLI, public surface, corpus benchmark, docs tour)
+        run: pytest tests/test_bench_corpus.py tests/test_cli_suite.py tests/test_public_surface.py tests/test_tour.py -q
