@@ -18,6 +18,8 @@ pandas = ">=2.2"
 psutil = ">=5"
 pytorch = ">=2.14,<2.15"
 pip = ">=24"
+astroquery = ">=0.4.11,<0.5"
+pytest-cov = ">=7.1.0,<8"
 
 [activation.env]
 PYTHONNOUSERSITE = "1"
@@ -28,6 +30,12 @@ dev = "pip install -e . --no-deps"
 subject = "pip install --no-deps"
 test = "pytest tests/test_fitsio_upstream_smoke.py tests/test_astropy_upstream_smoke.py tests/test_layout.py tests/test_verify_vs_fitsverify.py -q"
 bench-cpp = "python benchmarks/bench_cpp_backend.py"
+# Real-archive corpus (~16 GB full tier; the CI tier is ~8 MB).
+corpus-fetch = "python scripts/fetch_corpus.py --tier full --update-manifest"
+corpus-list = "python scripts/fetch_corpus.py --tier full --list"
+corpus-verify = "python scripts/fetch_corpus.py --tier full --verify"
+corpus-test = "pytest tests/test_corpus_manifest.py tests/test_corpus_parity.py tests/test_operation_matrix.py tests/test_write_parity.py -q"
+oracle-test = "pytest tests/test_cfitsio_oracle.py -q"
 # Local suites use this env. The subject is an installed torchfits wheel, not a
 # build of this repo. Set TORCHFITS_BENCH_ENV to select another Pixi env.
 bench-fits = "python benchmarks/bench_all.py --profile user --fits-only"

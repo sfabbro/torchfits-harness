@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "description": "Real-archive FITS corpus for torchfits parity and benchmarks.",
+  "root": "benchmarks_data/corpus",
+  "sources": [
+    {
+      "id": "sdss_spec_0266_51630_0001",
+      "family": "spectrum",
+      "families": [
+        "spectrum",
+        "mef"
+      ],
+      "archive": "SDSS DR18 SAS",
+      "tier": "ci",
+      "kind": "https",
+      "url": "https://data.sdss.org/sas/dr18/spectro/sdss/redux/26/spectra/0266/spec-0266-51630-0001.fits",
+      "filename": "spec-0266-51630-0001.fits",
+      "bytes": 748800,
+      "sha256": "bad82063910273d45b8321843bd1c6f22326bd448b560b6b4c6ced41c6d9df8c",
+      "hdus": "COADD, SPECOBJ, SPZLINE, per-exposure spectra",
+      "license": "SDSS public data",
+      "notes": "Legacy SDSS fibre spectrum: real multi-HDU product with 1D spectra and row tables."
+    },
+    {
+      "id": "sdss_plates_dr18",
+      "family": "table",
+      "families": [
+        "table"
+      ],
+      "archive": "SDSS DR18 SAS",
+      "tier": "ci",
+      "kind": "https",
+      "url": "https://data.sdss.org/sas/dr18/spectro/sdss/redux/plates-dr18.fits",
+      "filename": "plates-dr18.fits",
+      "bytes": 7099200,
+      "sha256": "539049482889a0aae57443d9e6a994c4919e5ac6085b9e70ca123e8cb95fd633",
+      "hdus": "PLATE",
+      "license": "SDSS public data",
+      "notes": "Real binary table: integer, float and string columns for every SDSS plate."
+    },
+    {
+      "id": "sdss_manga_logrss_8485_12701",
+      "family": "cube",
+      "families": [
+        "cube",
+        "mef",
+        "spectrum"
+      ],
+      "archive": "SDSS DR17 SAS",
+      "tier": "full",
+      "kind": "https",
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/8485/stack/manga-8485-12701-LOGRSS.fits.gz",
+      "filename": "manga-8485-12701-LOGRSS.fits.gz",
+      "bytes": 100937551,
+      "sha256": "eb263b712816c83e13a212ac05a44e34317a6efae6b263688306c3a9843b428a",
+      "hdus": "FLUX, IVAR, MASK (N_wave, N_spec)",
+      "license": "SDSS public data",
+      "notes": "MaNGA row-stacked spectra in a gzipped FITS MEF: real 2D spectra cube with masks."
+    },
+    {
+      "id": "sdss_manga_logcube_8485_12701",
+      "family": "cube",
+      "families": [
+        "cube",
+        "mef"
+      ],
+      "archive": "SDSS DR17 SAS",
+      "tier": "full",
+      "kind": "https",
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/8485/stack/manga-8485-12701-LOGCUBE.fits.gz",
+      "filename": "manga-8485-12701-LOGCUBE.fits.gz",
+      "bytes": 204196343,
+      "sha256": "af396dcd589f8682e7949562faa123f66599519fad9a95693c77816b7d21b998",
+      "hdus": "FLUX, IVAR, MASK (N_wave, N_y, N_x)",
+      "license": "SDSS public data",
+      "notes": "MaNGA IFU data cube: a real 3D datacube inside a gzipped multi-extension file."
+    },
+    {
+      "id": "sdss_specobj_dr17",
+      "family": "table",
+      "families": [
+        "table"
+      ],
+      "archive": "SDSS DR18 SAS",
+      "tier": "full",
+      "kind": "https",
+      "url": "https://data.sdss.org/sas/dr18/spectro/sdss/redux/specObj-dr17.fits",
+      "filename": "specObj-dr17.fits",
+      "bytes": 6741023040,
+      "sha256": "47757651feec576f5207becb3aad6cc820db041e81a68b7c0aaf4d572bc5235c",
+      "hdus": "SPECOBJ",
+      "license": "SDSS public data",
+      "notes": "6.7 GB binary table with every SDSS spectrum: the large-catalog case for row windows, projection and predicates."
+    },
+    {
+      "id": "mast_phat_brick01_phot",
+      "family": "table",
+      "families": [
+        "table"
+      ],
+      "archive": "MAST HLSP (PHAT)",
+      "tier": "full",
+      "kind": "https",
+      "url": "https://archive.stsci.edu/pub/hlsp/phat/brick01/hlsp_phat_hst_wfc3-uvis-acs-wfc-wfc3-ir_12058-m31-b01-f01_f275w-f336w-f475w-f814w-f110w-f160w_v2_phot.fits.gz",
+      "filename": "hlsp_phat_brick01_f01_phot.fits.gz",
+      "bytes": 822704221,
+      "sha256": "3ecca704dc365edc45f538cae321b1d8ee82e9d7d78c68529cee2e286c2f00fa",
+      "hdus": "photometry table",
+      "license": "STScI HLSP public data",
+      "notes": "HST PHAT photometry catalog (gzipped): real multi-band table from MAST."
+    },
+    {
+      "id": "cfht_megacam_1722795p",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/1722795p.fits.fz",
+      "bytes": 310870080,
+      "sha256": "072f7e3e8eaf973b1b85d3094cd49febbca2669f0d6fea626b24948751f8642d",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2366188o",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2366188o.fits.fz",
+      "bytes": 234875520,
+      "sha256": "02d205e8ef64bafaccf056dc68ae9bcdde7fe1b9409157c8ceba5484b529b71f",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2366188p",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2366188p.fits.fz",
+      "bytes": 233305920,
+      "sha256": "3dc05ea40b2caa5744315b1382f20a6cfd5c9891f622460e6961a8abdbe7737c",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2366432o",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2366432o.fits.fz",
+      "bytes": 235350720,
+      "sha256": "ece9590b283be099b2b2d7bf5617e4242bba2c65960781ae6b8cc30a80a455fa",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2366432p",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2366432p.fits.fz",
+      "bytes": 233795520,
+      "sha256": "0bdef22877263e7a9d3b47985e8a94b534cb58ff20e74ba0994d2a8ede183779",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2376828o",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2376828o.fits.fz",
+      "bytes": 330462720,
+      "sha256": "ab262cdd517685f64c06bbbecbb4378707dd0a09c5887fed8bcdc5748c10de02",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2376828p",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2376828p.fits.fz",
+      "bytes": 327340800,
+      "sha256": "865bb481592f0f7692275f77495fcb8ef2da122b21d47c6769972c7408867b7e",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2480747o",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2480747o.fits.fz",
+      "bytes": 265343040,
+      "sha256": "37ac02e382362a389b85a691c2366c6bda280c14fde468b464c168c8e92e47e9",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2583975o",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2583975o.fits.fz",
+      "bytes": 328152960,
+      "sha256": "c3ab1621e86021ad92ef67f2b89afc4e8553b2fc258645d3d6ed0040358ba1f2",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megacam_2583975p",
+      "family": "mef",
+      "families": [
+        "mef",
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megacam/2583975p.fits.fz",
+      "bytes": 324290880,
+      "sha256": "9bf7f69b89ed487265ba1f6c874faab093d8bf58fdb831e54f17aa27ab0be017",
+      "hdus": "40 compressed CCD extensions (Rice)",
+      "license": "CFHT public archive",
+      "notes": "Real MegaCam exposure: int16 pixels, BZERO=32768, Rice-compressed image extensions."
+    },
+    {
+      "id": "cfht_megapipe_G",
+      "family": "image",
+      "families": [
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megapipe/D1.IQ.G.fits",
+      "bytes": 1742040000,
+      "sha256": "63d2b820a6db43316cab97c72b0e8df7f3298d1920a04006331c7a65aaa7fed1",
+      "hdus": "single 1.6 GB mosaic",
+      "license": "CFHT public archive",
+      "notes": "Real 435-megapixel MegaPipe mosaic: the large-image case for cutouts and region reads."
+    },
+    {
+      "id": "cfht_megapipe_I",
+      "family": "image",
+      "families": [
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megapipe/D1.IQ.I.fits",
+      "bytes": 1742057280,
+      "sha256": "96799bbe969ff106ce2ad2ad01b0b09b5388f3e7d2ac390c6ed9e0c368fea65d",
+      "hdus": "single 1.6 GB mosaic",
+      "license": "CFHT public archive",
+      "notes": "Real 435-megapixel MegaPipe mosaic: the large-image case for cutouts and region reads."
+    },
+    {
+      "id": "cfht_megapipe_R",
+      "family": "image",
+      "families": [
+        "image"
+      ],
+      "archive": "CFHT via CADC",
+      "tier": "full",
+      "kind": "local",
+      "path": "benchmarks_data/cfht_megapipe/D1.IQ.R.fits",
+      "bytes": 1742048640,
+      "sha256": "46d6929afc123c879cf48d06b2e89459b60596569f30ba96c027e3b2bec0b80f",
+      "hdus": "single 1.6 GB mosaic",
+      "license": "CFHT public archive",
+      "notes": "Real 435-megapixel MegaPipe mosaic: the large-image case for cutouts and region reads."
+    },
+    {
+      "id": "astropy_fits_corpus",
+      "family": "mixed",
+      "families": [
+        "image",
+        "table",
+        "mef"
+      ],
+      "archive": "astropy",
+      "tier": "ci",
+      "kind": "astropy",
+      "glob": "*.fits",
+      "bytes": 688320,
+      "sha256": null,
+      "license": "BSD-3-Clause (astropy)",
+      "notes": "astropy's installed FITS regression corpus: zero-width columns, TDIM mismatch, heap gaps, scaled unsigned images, random groups."
+    }
+  ]
+}

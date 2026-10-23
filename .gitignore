@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 benchmarks_results/
 benchmarks_data/
+build/
 dist/
 *.egg-info/
 .venv/
