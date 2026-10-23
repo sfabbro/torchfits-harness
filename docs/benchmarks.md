@@ -381,6 +381,7 @@ mmap-on and mmap-off peers are never cross-compared.
 | `bench_gpu_memory.py` | fits (diagnostic) | GPU memory/leak checks (non-gating) |
 | `bench_denoise.py` | ml (scientific) | Noise2Noise CR-cleaning on real CFHT MegaCam frames (the example and write-up live in [torchfits](https://github.com/astroai/torchfits/blob/main/docs/denoise-pipeline.md)) |
 | `bench_import_boundary.py` | cold start | Fresh-process spawn-to-exit cost per entry point, split by whether torch was loaded; `--strict` gates on the boundary and per-entry-point budgets |
+| `bench_corpus.py` | corpus | Real archive files (`pixi run bench-corpus`): header, whole-image, central-window and row-window reads by torchfits, astropy and fitsio on the same HDU |
 
 ## Coverage matrix
 
