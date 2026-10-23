@@ -5,6 +5,9 @@ __pycache__/
 .ruff_cache/
 benchmarks_results/
 benchmarks_data/
+# Coverage/cpp-gcov output from `pixi run coverage-*`.
+reports/
+.cov-cpp/
 build/
 dist/
 *.egg-info/
