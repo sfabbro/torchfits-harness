@@ -172,7 +172,9 @@ if [[ -n "${ARC_URI}" && -d "${ARC_URI}" ]]; then
   cp -a "${RUN_DIR}/manifest.txt" "${ARC_URI}/manifest.txt"
 fi
 
-if [[ "${PERSISTED}" -ne 1 ]]; then
+# Modes that produce no CSVs (release-gate) have nothing to archive, so the
+# persistence requirement only applies when a bench output tree exists.
+if [[ -d "${BENCH_OUT}" && "${PERSISTED}" -ne 1 ]]; then
   echo "ERROR: bench finished but neither /arc nor vos: archive succeeded" >&2
   echo "  ARC=${TORCHFITS_ARC_DEST:-unset} VOS=${TORCHFITS_VOS_DEST:-unset}" >&2
   exit 1
