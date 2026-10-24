@@ -73,14 +73,12 @@ class TorchFitsDataset(Dataset):
         hdu: int | str | None = "auto",
         mmap: bool | str = "auto",
         cache_capacity: int = 0,
-        handle_cache_capacity: int = 64,
         scale_on_device: bool = True,
     ):
         self.filepaths = filepaths
         self.hdu = hdu
         self.mmap = mmap
         self.cache_capacity = cache_capacity
-        self.handle_cache_capacity = handle_cache_capacity
         self.scale_on_device = scale_on_device
 
     def __len__(self) -> int:
@@ -92,7 +90,6 @@ class TorchFitsDataset(Dataset):
             hdu=self.hdu,
             mmap=self.mmap,
             cache_capacity=self.cache_capacity,
-            handle_cache_capacity=self.handle_cache_capacity,
             scale_on_device=self.scale_on_device,
         )
 
@@ -353,7 +350,6 @@ def run_benchmark() -> None:
                     hdu="auto",
                     mmap="auto",
                     cache_capacity=0,
-                    handle_cache_capacity=64,
                     scale_on_device=True,
                 ),
                 "fitsio + numpy": lambda: FitsioDataset(filepaths, ext=None),
@@ -394,7 +390,6 @@ def run_benchmark() -> None:
                     hdu=1,
                     mmap="auto",
                     cache_capacity=0,
-                    handle_cache_capacity=64,
                     scale_on_device=True,
                 ),
                 "fitsio (comp)": lambda: FitsioDataset(filepaths_comp, ext=1),

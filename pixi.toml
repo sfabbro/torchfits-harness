@@ -45,6 +45,12 @@ surface-update = "python scripts/surface_report.py --update --markdown docs/publ
 # Contract gates: the corpus benchmark, the CLI, the public surface and the
 # executed docs tour. They skip the corpus-dependent cases when it is absent.
 contract-test = "pytest tests/test_bench_corpus.py tests/test_cli_suite.py tests/test_public_surface.py tests/test_tour.py -q"
+# Local macOS lane: MPS device placement and the float32 transform branches.
+# CANFAR has no MPS device, so nothing else covers them.
+mps-lane = "bash scripts/mps_lane.sh"
+# Every CANFAR lane in one session (corpus, replays, contracts, benchmarks).
+lanes-canfar = "bash scripts/launch_canfar_all_lanes.sh"
+lanes-canfar-gpu = "bash scripts/launch_canfar_all_lanes.sh --gpu"
 # Line coverage of the installed torchfits wheel (no source, no compilation).
 coverage-python = "pytest tests -q --cov=torchfits --cov-report=term:skip-covered --cov-report=html:reports/python-coverage"
 # C/C++ coverage needs an instrumented build; see docs/coverage.md.

@@ -7,7 +7,7 @@ name = "torchfits-harness"
 version = "0.1.0"
 description = "Benchmarks, upstream parity, and migration notes for torchfits"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 dependencies = ["torchfits>=1.3.0"]
 

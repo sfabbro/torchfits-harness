@@ -39,7 +39,7 @@ _BENCH_HOST = socket.gethostname()
 
 # Scorecard timings must be cold-open / no handle cache. Peers (astropy, fitsio)
 # reopen every iteration; leaving TorchFits cache on measured cache hits.
-_TF_NO_CACHE = {"cache_capacity": 0, "handle_cache_capacity": 0}
+_TF_NO_CACHE = {"cache_capacity": 0}
 _TF_READ_NO_CACHE = {**_TF_NO_CACHE, "use_cache": False}
 
 

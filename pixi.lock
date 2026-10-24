@@ -9121,7 +9121,7 @@ packages:
   - pandas>=2.2 ; extra == 'bench'
   - matplotlib>=3.11 ; extra == 'bench'
   - psutil>=5 ; extra == 'bench'
-  requires_python: '>=3.10'
+  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/3f/99/9338284745a0134c33f131e85fb90436601fc704c094c0a3c6e13fa977b6/torchfits-1.3.0-cp313-cp313-macosx_11_0_arm64.whl
   name: torchfits
   version: 1.3.0
