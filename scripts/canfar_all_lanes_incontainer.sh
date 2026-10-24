@@ -272,7 +272,7 @@ lane_real_data() {
     ( cd "$TF_DIR" && pixi install && pixi run dev ) || return 1
   fi
   ( cd "$TF_DIR" && pixi run python -m pytest \
-      tests/test_reads_real_data.py tests/test_core_library_real_data.py \
+      tests/test_real_data_reads.py tests/test_core_library_real_data.py \
       -q -p no:cacheprovider ) || return 1
   pytest_lane tests/test_reads_real_data.py
 }
