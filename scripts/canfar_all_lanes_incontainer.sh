@@ -178,13 +178,20 @@ pytest_lane() {
 # modules: anything still alive at the cap is hung, not slow.
 run_with_cap() {
   local secs="$1" fn="$2" waited=0 pid
-  "$fn" &
+  # setsid gives the lane its own process group, so a timeout can take the
+  # python children with it: killing the wrapper subshell alone leaves the
+  # benchmark writing to the log while the next lane starts.
+  if command -v setsid >/dev/null; then
+    setsid "$fn" &
+  else
+    "$fn" &
+  fi
   pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     if (( waited >= secs )); then
-      kill -TERM "$pid" 2>/dev/null || true
+      kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
       sleep 5
-      kill -KILL "$pid" 2>/dev/null || true
+      kill -KILL "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true
       return 124
     fi
@@ -296,15 +303,22 @@ lane_bench_ml() {
 
 lane_bench_megacam() {
   fetch_real_data || return 1
+  # MegaCam frames are 1.6 GB each and every case re-reads whole HDUs, so the
+  # lane is bounded: the first file proves the code path, more files only add
+  # wall-clock. Raise TORCHFITS_MEGACAM_FILES for a longer measurement.
   local data="${SHARED_BENCH_DATA}/cfht_megacam" rc=0
+  local files="${TORCHFITS_MEGACAM_FILES:-3}" hdus="${TORCHFITS_MEGACAM_HDUS:-2}"
   "$ENV_PY" benchmarks/bench_megacam_cutouts.py --data-dir "$data" \
+    --max-files "$files" --max-hdus "$hdus" \
     --run-id "${TORCHFITS_HARNESS_RUN_ID}" || rc=1
-  "$ENV_PY" benchmarks/bench_median_stack.py --data-dir "$data" --max-files 4 \
+  "$ENV_PY" benchmarks/bench_median_stack.py --data-dir "$data" \
+    --max-files "$files" --max-hdus "$hdus" \
     --run-id "${TORCHFITS_HARNESS_RUN_ID}" || rc=1
-  "$ENV_PY" benchmarks/bench_http_stream.py --data-dir "$data" --max-files 3 \
+  "$ENV_PY" benchmarks/bench_http_stream.py --data-dir "$data" \
+    --max-files 2 --max-hdus 1 \
     --run-id "${TORCHFITS_HARNESS_RUN_ID}" || rc=1
   "$ENV_PY" benchmarks/bench_science_pipeline.py --data-dir "$data" \
-    --max-files 3 --cutouts-per-file 2 --threads 4 \
+    --max-files 2 --max-hdus 1 --cutouts-per-file 2 --threads 4 \
     --run-id "${TORCHFITS_HARNESS_RUN_ID}" || rc=1
   return $rc
 }
