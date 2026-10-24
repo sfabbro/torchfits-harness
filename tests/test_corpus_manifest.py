@@ -22,6 +22,20 @@ BY_ID = {source["id"]: source for source in SOURCES}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
+def _local_samples_present() -> bool:
+    """Whether the CFHT samples the manifest points at have been fetched.
+
+    They are gitignored, so a fresh clone (CI, a CANFAR verify session) has the
+    manifest but not the files. The manifest checks below still apply there;
+    only the assertions that need the bytes are conditional.
+    """
+    return any(
+        corpus.source_path(source).is_file()
+        for source in SOURCES
+        if source["kind"] == "local"
+    )
+
+
 def test_manifest_ids_are_unique_and_complete() -> None:
     assert MANIFEST["version"] == 1
     assert MANIFEST["root"] == "benchmarks_data/corpus"
@@ -36,7 +50,9 @@ def test_manifest_ids_are_unique_and_complete() -> None:
             assert source["url"].startswith("https://")
             assert source["filename"]
         elif source["kind"] == "local":
-            assert (ROOT / source["path"]).is_file(), source["path"]
+            assert source["path"]
+            if _local_samples_present():
+                assert (ROOT / source["path"]).is_file(), source["path"]
         elif source["kind"] == "astropy":
             assert source["glob"]
         else:  # pragma: no cover - guards typos in the data file
@@ -87,6 +103,8 @@ def test_astropy_corpus_resolves_from_the_installed_package() -> None:
 def test_local_cfht_sources_point_at_real_files() -> None:
     local = [source for source in SOURCES if source["kind"] == "local"]
     assert len(local) >= 10
+    if not _local_samples_present():
+        pytest.skip("CFHT samples are not fetched; run scripts/fetch_cfht_megacam_sample.sh")
     for source in local:
         path = corpus.source_path(source)
         assert path.is_file()
