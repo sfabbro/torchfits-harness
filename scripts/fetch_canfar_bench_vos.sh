@@ -12,19 +12,39 @@ LOCAL_DIR="${ROOT_DIR}/benchmarks_results/${RUN_ID}"
 
 if command -v vcp >/dev/null; then
   VCP=(vcp)
+  VLS=(vls)
 else
-  # vos is a pixi pypi-dependency; the script is not on PATH outside the env.
+  # vos is a pixi pypi-dependency; the scripts are not on PATH outside the env.
   VCP=(pixi run vcp)
+  VLS=(pixi run vls)
 fi
 
 mkdir -p "${LOCAL_DIR}"
-"${VCP[@]}" "${VOS_URI}/" "${LOCAL_DIR}/"
-# ponytail: pre-fix uploads nested <run-id>/ inside dest; flatten for patch scripts
-nested="${LOCAL_DIR}/${RUN_ID}"
-if [[ -d "${nested}" ]]; then
-  shopt -s nullglob dotglob
-  mv "${nested}"/* "${LOCAL_DIR}/" 2>/dev/null || true
-  rmdir "${nested}" 2>/dev/null || true
-  shopt -u nullglob dotglob
+
+# Copy the artifacts one by one rather than recursing: `--keep-temp` leaves a
+# `_raw` fixture tree that vcp cannot resume into (it fails creating the .part
+# file), and older uploads nest <run-id>/ inside the destination.
+SRC="${VOS_URI}"
+entries="$("${VLS[@]}" "${SRC}/")"
+if grep -qx "${RUN_ID}" <<<"${entries}"; then
+  SRC="${VOS_URI}/${RUN_ID}"
+  entries="$("${VLS[@]}" "${SRC}/")"
 fi
-echo "fetched ${VOS_URI} -> ${LOCAL_DIR}"
+
+copied=0
+while IFS= read -r name; do
+  case "${name}" in
+    "" | "_raw" | "${RUN_ID}") continue ;;
+  esac
+  if "${VCP[@]}" "${SRC}/${name}" "${LOCAL_DIR}/${name}"; then
+    copied=$((copied + 1))
+  else
+    echo "skip ${name}: not a file vcp can fetch" >&2
+  fi
+done <<<"${entries}"
+
+if [[ "${copied}" -eq 0 ]]; then
+  echo "no artifacts under ${SRC}" >&2
+  exit 1
+fi
+echo "fetched ${copied} artifacts from ${SRC} -> ${LOCAL_DIR}"
