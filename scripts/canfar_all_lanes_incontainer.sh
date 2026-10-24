@@ -90,10 +90,18 @@ pixi run dev > "${LOG_DIR}/pixi-dev.log" 2>&1 || {
 # which is how a lane silently tests a different version than it reports.
 ENV_PY="$(pixi run python -c 'import sys; print(sys.executable)' | tail -1)"
 echo "env python: ${ENV_PY}"
+# The wheel's console script lands in the environment's bin, which is not on
+# PATH when the interpreter is invoked by absolute path. The docs tour runs
+# `torchfits`, so without this it errors on a missing console script.
+export PATH="$(dirname "$ENV_PY"):${PATH}"
 
 if [[ -n "${TORCHFITS_TORCH_INDEX:-}" ]]; then
   echo "--- installing torch from ${TORCHFITS_TORCH_INDEX}"
-  "$ENV_PY" -m pip install -q --no-cache-dir "torch==${TORCHFITS_TORCH:-2.14.1}" \
+  # --force-reinstall: the environment already carries torch at the same
+  # version, so a plain install prints "already satisfied" and leaves the CPU
+  # build in place, which then reports cuda False on an H100 session.
+  "$ENV_PY" -m pip install -q --no-cache-dir --force-reinstall \
+    "torch==${TORCHFITS_TORCH:-2.14.1}" \
     --index-url "${TORCHFITS_TORCH_INDEX}" > "${LOG_DIR}/torch.log" 2>&1 || {
     tail -20 "${LOG_DIR}/torch.log"
     echo "FAIL: torch install"
@@ -193,7 +201,9 @@ fetch_corpus() {
 
 fetch_real_data() {
   local sample
-  for sample in fetch_cfht_megacam_sample fetch_cfht_megapipe_sample; do
+  # The calibration frames are not optional for the denoise lane: it needs two
+  # dark frames and otherwise writes zero rows while still exiting 0.
+  for sample in fetch_cfht_megacam_sample fetch_cfht_megapipe_sample fetch_cfht_calib_frames; do
     if ! bash "${TF_DIR}/scripts/${sample}.sh"; then
       echo "FAIL: ${sample}"
       return 1
