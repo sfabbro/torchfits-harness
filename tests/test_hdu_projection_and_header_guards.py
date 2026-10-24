@@ -359,7 +359,7 @@ def test_update_with_nothing_to_do_leaves_the_version_alone():
 
 def test_a_header_edit_moves_the_row_count_of_a_columnless_table():
     header = Header({"TFIELDS": 0, "NAXIS2": 10})
-    table = TableHDU({}, None, header)
+    table = TableHDU({}, header=header)
     assert table.num_rows == 10
 
     header["NAXIS2"] = 4
@@ -373,7 +373,7 @@ def test_a_header_edit_moves_the_row_count_of_a_columnless_table():
 
 def test_the_header_constructor_copy_also_tracks_the_row_count():
     src = Header({"TFIELDS": 0, "NAXIS2": 5})
-    table = TableHDU({}, None, src)
+    table = TableHDU({}, header=src)
     assert table.num_rows == 5
     src["NAXIS2"] = 2
     assert table.num_rows == 2
@@ -381,7 +381,7 @@ def test_the_header_constructor_copy_also_tracks_the_row_count():
 
 def test_a_table_with_columns_ignores_naxis2():
     """The row count of a materialized table comes from its column data."""
-    table = TableHDU({"x": torch.arange(10.0)}, None, Header({"NAXIS2": 10}))
+    table = TableHDU({"x": torch.arange(10.0)}, header=Header({"NAXIS2": 10}))
     assert table.num_rows == 10
     table.header["NAXIS2"] = 2
     assert table.num_rows == 10
@@ -389,12 +389,12 @@ def test_a_table_with_columns_ignores_naxis2():
 
 def test_a_table_without_columns_or_header_reports_no_rows():
     assert TableHDU({}).num_rows == 0
-    assert TableHDU({}, None, Header({})).num_rows == 0
+    assert TableHDU({}, header=Header({})).num_rows == 0
 
 
 def test_repeated_row_counts_agree_with_head():
     header = Header({"TFIELDS": 0, "NAXIS2": 10})
-    table = TableHDU({}, None, header)
+    table = TableHDU({}, header=header)
     assert table.num_rows == table.head(10).num_rows
     header["NAXIS2"] = 3
     assert table.num_rows == 3

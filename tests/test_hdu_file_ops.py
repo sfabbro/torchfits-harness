@@ -7,12 +7,18 @@ import torchfits
 import torchfits._io_engine.write_api as write_api
 
 
-def test_opened_hdul_repr_handles_string_header_numbers(tmp_path):
+def test_opened_hdul_repr_reports_shape_and_dtype(tmp_path):
+    """``repr`` reads the summary from parsed header values, which 1.3.0 keeps
+    typed (NAXIS is an int; see ``HDUList.fromfile``). It must not depend on
+    the raw FITS string form and must not choke on either."""
     path = tmp_path / "repr.fits"
     torchfits.write(str(path), torch.ones((2, 3), dtype=torch.float32))
 
     with torchfits.open(str(path)) as hdul:
-        assert isinstance(hdul[0].header["NAXIS"], str)
+        assert hdul[0].header["NAXIS"] == 2
+        # The raw card is still a string, so the summary has to cope with a
+        # string-typed numeric card as well (r4b: repr used to format it raw).
+        hdul[0].header["NAXIS"] = "2"
         summary = repr(hdul)
 
     assert "(2, 3)" in summary

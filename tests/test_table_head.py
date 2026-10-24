@@ -90,7 +90,7 @@ def test_head_truncates_a_zero_column_table():
     it was materialized from reported 2.
     """
     header = Header({"TFIELDS": 0, "NAXIS2": 6})
-    table = TableHDU({}, None, header)
+    table = TableHDU({}, header=header)
 
     assert table.num_rows == 6
     assert table.head(2).num_rows == 2

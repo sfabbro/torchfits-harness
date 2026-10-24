@@ -76,10 +76,15 @@ def test_fromfile_keeps_duplicate_history_and_comment(tmp_path) -> None:
 def test_fromfile_internal_attribute_error_is_not_silently_rerouted(
     tmp_path, monkeypatch
 ):
-    """An AttributeError raised *inside* the batch open must surface (as the
-    documented wrapped RuntimeError), not silently trigger the legacy fallback
-    and read the file through a different code path."""
-    import torchfits._C as cpp
+    """An AttributeError raised *inside* the batch open must surface as the
+    documented wrapped RuntimeError, not silently trigger a legacy fallback
+    and read the file through a different code path.
+
+    1.3.0 reads headers through ``torchfits._core`` (the torch-free core), not
+    the old ``_C.open_and_read_headers`` batch helper, so the fault is
+    injected there.
+    """
+    from torchfits import _core
 
     path = str(tmp_path / "attr.fits")
     fits.PrimaryHDU(data=np.zeros((2, 2), dtype=np.float32)).writeto(
@@ -89,11 +94,7 @@ def test_fromfile_internal_attribute_error_is_not_silently_rerouted(
     def boom(*args, **kwargs):
         raise AttributeError("internal binding bug")
 
-    def no_fallback(*args, **kwargs):
-        raise AssertionError("legacy fallback must not run")
-
-    monkeypatch.setattr(cpp, "open_and_read_headers", boom)
-    monkeypatch.setattr(cpp, "open_fits_file", no_fallback)
+    monkeypatch.setattr(_core, "read_header_string", boom)
 
     with pytest.raises(RuntimeError) as exc_info:
         torchfits.HDUList.fromfile(path)

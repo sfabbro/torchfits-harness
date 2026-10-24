@@ -7,7 +7,6 @@ errors typed instead of swallowing them into slower retries.
 
 from __future__ import annotations
 
-import warnings
 from unittest import mock
 
 import pytest
@@ -56,7 +55,6 @@ def test_read_batch_hdus_short_batch_result_falls_back_per_hdu():
             start_row=1,
             num_rows=-1,
             cache_capacity=10,
-            handle_cache_capacity=16,
             fast_header=True,
             return_header=False,
             batch_to_device=lambda xs, d: xs,
@@ -89,7 +87,6 @@ def _fallback_kwargs(cpp, handle, read_header, **overrides):
         fp16=False,
         bf16=False,
         cache_capacity=0,
-        handle_cache_capacity=16,
         fast_header=True,
         return_header=False,
         force_image=False,
@@ -117,7 +114,7 @@ def test_fallback_table_typed_dispatch_ignores_message():
     handle = mock.Mock()
 
     with mock.patch.object(
-        _read_pipeline_fallback, "get_cached_handle", lambda p, c: (handle, False)
+        _read_pipeline_fallback, "get_cached_handle", lambda p: (handle, False)
     ):
         out = _read_pipeline_fallback.read_fallback(
             **_fallback_kwargs(cpp, handle, lambda *a, **k: {}, force_table=True)
@@ -136,7 +133,7 @@ def test_fallback_table_io_error_same_message_propagates_typed():
     handle = mock.Mock()
 
     with mock.patch.object(
-        _read_pipeline_fallback, "get_cached_handle", lambda p, c: (handle, False)
+        _read_pipeline_fallback, "get_cached_handle", lambda p: (handle, False)
     ):
         with pytest.raises(OSError, match="truncated at byte 42"):
             _read_pipeline_fallback.read_fallback(
@@ -158,7 +155,7 @@ def test_fallback_table_all_readers_fail_keeps_first_error():
     handle = mock.Mock()
 
     with mock.patch.object(
-        _read_pipeline_fallback, "get_cached_handle", lambda p, c: (handle, False)
+        _read_pipeline_fallback, "get_cached_handle", lambda p: (handle, False)
     ):
         with pytest.raises(RuntimeError, match="primary: data truncated at row 5"):
             _read_pipeline_fallback.read_fallback(
@@ -172,7 +169,7 @@ def test_fallback_rethrows_io_errors_typed(tmp_path, monkeypatch):
     path = str(tmp_path / "io_err.fits")
     torchfits.write(path, torch.zeros(4, 4), overwrite=True)
 
-    def boom(p, cap):
+    def boom(p):
         raise FileNotFoundError(p)
 
     monkeypatch.setattr(_read_pipeline_fallback, "get_cached_handle", boom)
@@ -254,7 +251,7 @@ def test_fallback_table_io_error_not_retried():
     handle = mock.Mock()
 
     with mock.patch.object(
-        _read_pipeline_fallback, "get_cached_handle", lambda p, c: (handle, False)
+        _read_pipeline_fallback, "get_cached_handle", lambda p: (handle, False)
     ):
         with pytest.raises(OSError, match="disk gone"):
             _read_pipeline_fallback.read_fallback(
@@ -280,7 +277,7 @@ def test_fallback_image_skips_header_read_without_return_header(monkeypatch):
     cpp.read_full.return_value = torch.zeros(2, 2)
     handle = mock.Mock()
     monkeypatch.setattr(
-        _read_pipeline_fallback, "get_cached_handle", lambda p, c: (handle, False)
+        _read_pipeline_fallback, "get_cached_handle", lambda p: (handle, False)
     )
     reads = []
 
@@ -301,23 +298,15 @@ def test_fallback_image_skips_header_read_without_return_header(monkeypatch):
     assert reads == [1]
 
 
-def test_read_kwargs_handle_cache_capacity_warns_literal_text(tmp_path):
-    """The read() kwarg site must emit the same pinned literal as
-    tests/test_deprecated_knobs.py (r4a-09)."""
+def test_read_rejects_the_removed_handle_cache_capacity_kwarg(tmp_path):
+    """1.3.0 removed ReadOptions.handle_cache_capacity (docs/compatibility.md).
+    The read() kwarg site must reject it by name rather than silently ignore
+    an option that no longer controls anything."""
     path = str(tmp_path / "knob.fits")
     torchfits.write(path, torch.zeros(2, 2), overwrite=True)
 
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        out = torchfits.read(path, handle_cache_capacity=8)
-    assert out.shape == (2, 2)
-    msgs = [
-        str(w.message) for w in caught if issubclass(w.category, DeprecationWarning)
-    ]
-    assert msgs == [
-        "ReadOptions.handle_cache_capacity is ignored since the handle cache was "
-        "removed; it will be removed in 2.0"
-    ]
+    with pytest.raises(TypeError, match="handle_cache_capacity"):
+        torchfits.read(path, handle_cache_capacity=8)
 
 
 def test_read_list_corrupt_file_in_batch_of_three_raises_naming_path(tmp_path):

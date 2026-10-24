@@ -99,14 +99,21 @@ def test_native_raw_transport_owns_buffers_and_preserves_vla_offsets():
         assert raw["BITS"]["dtype"] == "bool"
         assert tuple(raw["BITS"]["shape"]) == (3, 8)
         assert isinstance(raw["BITS"]["data"], memoryview)
-        assert isinstance(raw["BITS"]["data"].obj, bytearray)
-        assert not raw["BITS"]["data"].readonly
+        # The transport must own its buffer (a bytearray in the first cut, a
+        # torchfits._TensorBuffer since 1.3.0); a bare memoryview over a
+        # temporary would dangle.
+        assert raw["BITS"]["data"].obj is not None
+        assert not isinstance(raw["BITS"]["data"].obj, memoryview)
+        # docs/api-tables.md: the extension exports each column as a read-only
+        # buffer over memory it owns.
+        assert raw["BITS"]["data"].readonly
 
         assert raw["VLA"]["kind"] == "vla"
         assert raw["VLA"]["dtype"] == "int32"
         assert tuple(raw["VLA"]["shape"]) == (3,)
         assert isinstance(raw["VLA"]["offsets"], memoryview)
-        assert isinstance(raw["VLA"]["offsets"].obj, bytearray)
+        assert raw["VLA"]["offsets"].obj is not None
+        assert not isinstance(raw["VLA"]["offsets"].obj, memoryview)
 
         bits = _raw_column_to_numpy(raw["BITS"])
         values, offsets = _raw_column_to_numpy(raw["VLA"])

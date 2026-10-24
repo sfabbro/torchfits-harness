@@ -334,7 +334,6 @@ class TestCaching:
                 hdu=0,
                 mmap="auto",
                 cache_capacity=10,
-                handle_cache_capacity=16,
             )
 
             assert isinstance(out, torch.Tensor)
@@ -392,7 +391,6 @@ class TestCaching:
                 hdu=0,
                 mmap=True,
                 cache_capacity=10,
-                handle_cache_capacity=16,
             )
 
             assert isinstance(out, torch.Tensor)
@@ -433,7 +431,6 @@ class TestCaching:
                 hdu=0,
                 mmap="auto",
                 cache_capacity=10,
-                handle_cache_capacity=16,
             )
 
             assert isinstance(out, torch.Tensor)
@@ -836,28 +833,20 @@ class TestDeprecatedNoOpContract:
         dep = [w for w in caught if issubclass(w.category, DeprecationWarning)]
         assert dep == []
 
-    def test_explicit_deprecated_calls_still_warn(self):
-        """The deprecation contract for explicit user calls is preserved."""
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            torchfits.cache.get_cache_manager().configure_cpp_cache()
-            torchfits.cache.configure_cache(1, 2, 3)
-        messages = [
-            str(w.message) for w in caught if issubclass(w.category, DeprecationWarning)
-        ]
-        assert any("configure_cpp_cache" in m for m in messages)
-        assert any("configure_cache" in m for m in messages)
+    def test_removed_cache_knobs_are_gone(self):
+        """1.3.0 removed the deprecated no-ops instead of warning forever."""
+        assert not hasattr(torchfits.cache, "configure_cache")
+        assert not hasattr(torchfits.cache.CacheManager, "configure_cpp_cache")
 
-    def test_configure_cache_is_documented_noop(self):
-        """``configure_cache`` is a documented no-op (changelog 1.1.2): it must
-        not replace the global cache manager with phantom-knob config (which
-        also raced ``get_cache_manager``'s lock-free read side)."""
-        before = torchfits.cache.get_cache_manager()
+    def test_removed_noop_cannot_replace_the_cache_manager(self):
+        """``configure_cache`` used to swap the global manager for phantom-knob
+        config and race ``get_cache_manager``'s lock-free read side. With the
+        knob gone, the manager and its config must stay untouched."""
+        manager = torchfits.cache.get_cache_manager()
         stats_before = torchfits.cache.get_cache_stats()["config"]
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
+        with pytest.raises(AttributeError):
             torchfits.cache.configure_cache(7, 8, 9)
-        assert torchfits.cache.get_cache_manager() is before
+        assert torchfits.cache.get_cache_manager() is manager
         assert torchfits.cache.get_cache_stats()["config"] == stats_before
 
     def test_cache_stats_surface_engine_errors(self, monkeypatch):
