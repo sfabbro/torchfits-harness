@@ -60,3 +60,22 @@ CUDA 13.0 on every GPU leg.
 
 `canfar logs` returns only the tail of a session, so a leg keeps its own
 `build.log`, `pytest-*.log` and fetch logs under `/scratch/torchfits-matrix-tests/<tag>/`.
+
+## The verify lane
+
+`scripts/canfar_verify_incontainer.sh` answers a different question: it installs
+the **released wheel** (`TORCHFITS_WHEEL`, or `torchfits>=1.3.0`) and runs all of
+`tests/` plus a bounded bench. It is the only lane that runs every test, so it
+is where contract tests that still poke a previous release's internals surface.
+
+Result, 2026-10-24 (torchfits 1.3.0, harness `be24d72`): 2663 passed, 189
+skipped, 17 deselected, 5 xfailed in 5:06; `RESULT: PASS`.
+
+The first run of the lane was red by 20 tests that pinned the pre-1.3 contract:
+`read(handle_cache_capacity=)`, the deprecated `configure_cache` /
+`configure_cpp_cache` no-ops, positional `TableHDU(..., header)` (keyword-only
+since `4811f12`), the `_C.open_and_read_headers` batch helper, and writable
+raw-transport buffers. None was a torchfits regression: every one fails the same
+way against the dev tree, because 1.3.0 removed or changed the thing tested.
+The suite now pins the 1.3.0 contract, including that the removed knob is
+rejected by name.

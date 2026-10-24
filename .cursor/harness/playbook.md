@@ -11,3 +11,6 @@
 
 - id: canfar-wheel
   desc: CANFAR GPU benches clone this repo and pip-install a torchfits wheel. They do not vendor CFITSIO or call bench-install. The per-Python source matrix and the denoise session launcher were removed; the denoise example stays in torchfits.
+
+- id: canfar-verify-subject
+  desc: The CANFAR verify lane installs the released wheel and runs all of tests/, so contract tests that poke torchfits internals must track that release. Twenty tests still pinned the pre-1.3 tree (handle_cache_capacity, configure_cache no-ops, positional TableHDU headers, _C.open_and_read_headers, writable raw buffers) and made the lane red; align them with the released contract.
