@@ -178,20 +178,18 @@ pytest_lane() {
 # modules: anything still alive at the cap is hung, not slow.
 run_with_cap() {
   local secs="$1" fn="$2" waited=0 pid
-  # setsid gives the lane its own process group, so a timeout can take the
-  # python children with it: killing the wrapper subshell alone leaves the
-  # benchmark writing to the log while the next lane starts.
-  if command -v setsid >/dev/null; then
-    setsid "$fn" &
-  else
-    "$fn" &
-  fi
+  "$fn" &
   pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     if (( waited >= secs )); then
-      kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+      # The benchmark runs as a child of this subshell, so killing the subshell
+      # alone would leave it writing to the log while the next lane starts.
+      # Children first, then the subshell itself.
+      pkill -TERM -P "$pid" 2>/dev/null || true
+      kill -TERM "$pid" 2>/dev/null || true
       sleep 5
-      kill -KILL "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
+      pkill -KILL -P "$pid" 2>/dev/null || true
+      kill -KILL "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true
       return 124
     fi
