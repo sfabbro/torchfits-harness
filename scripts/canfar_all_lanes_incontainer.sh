@@ -34,8 +34,11 @@ RUN_DIR="${TORCHFITS_RUN_ROOT:-${SCRATCH}/torchfits-harness}/${TORCHFITS_HARNESS
 LOG_DIR="${RUN_DIR}/logs"
 mkdir -p "$RUN_DIR" "$LOG_DIR" "$DATA_ROOT"
 
-export PIXI_HOME="${PIXI_HOME:-${SCRATCH}/torchfits-pixi-home}"
-export PIXI_CACHE_DIR="${PIXI_CACHE_DIR:-${SCRATCH}/torchfits-pixi-cache}"
+# The image sets PIXI_HOME=/usr/local/share/pixi, which the job user cannot
+# write, so only an explicit TORCHFITS_PIXI_HOME may override scratch. Falling
+# back with ${PIXI_HOME:-...} silently kept the read-only image value.
+export PIXI_HOME="${TORCHFITS_PIXI_HOME:-${SCRATCH}/torchfits-pixi-home}"
+export PIXI_CACHE_DIR="${TORCHFITS_PIXI_CACHE:-${SCRATCH}/torchfits-pixi-cache}"
 export PIP_CACHE_DIR="${SCRATCH}/pip-cache"
 export TMPDIR="${SCRATCH}/tmp"
 export PYTHONNOUSERSITE=1
@@ -305,7 +308,7 @@ lane_bench_gpu() {
   "$ENV_PY" benchmarks/bench_gpu_memory.py || rc=1
   fetch_real_data || return 1
   "$ENV_PY" benchmarks/bench_denoise.py \
-    --data-dir "${SHARED_BENCH_DATA}/cfht_megacam" --max-files 4 --hdus 1 \
+    --data-dir "${SHARED_BENCH_DATA}/cfht_megacam" --max-files 4 --max-hdus 1 \
     --epochs 1 --run-id "${TORCHFITS_HARNESS_RUN_ID}" || rc=1
   return $rc
 }
