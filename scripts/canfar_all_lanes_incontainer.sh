@@ -201,6 +201,33 @@ run_with_cap() {
   wait "$pid"
 }
 
+# The CFITSIO oracle and the direct microbench both `find_package(ZLIB REQUIRED)`,
+# and the image ships the zlib runtime without headers. Without a prefix the
+# configure fails and the oracle tests turn into silent skips, which is how a
+# lane can look green while proving nothing about pure CFITSIO.
+ensure_cfitsio_build_deps() {
+  local prefix
+  for prefix in "${CONDA_PREFIX:-}" /usr/local /usr; do
+    [[ -n "$prefix" && -f "${prefix}/include/zlib.h" ]] && {
+      export ZLIB_ROOT="$prefix"
+      echo "zlib: ${prefix}"
+      return 0
+    }
+  done
+  prefix="${DATA_ROOT}/deps/zlib"
+  if [[ ! -f "${prefix}/include/zlib.h" ]]; then
+    local src="${DATA_ROOT}/deps/src"
+    mkdir -p "$src" "$prefix"
+    echo "--- building zlib 1.3.1 into ${prefix}"
+    curl -fsSL https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz \
+      | tar -xz -C "$src" || return 1
+    ( cd "${src}/zlib-1.3.1" && ./configure --prefix="$prefix" >/dev/null \
+        && make -j"$(nproc)" >/dev/null && make install >/dev/null ) || return 1
+  fi
+  export ZLIB_ROOT="$prefix"
+  echo "zlib: ${prefix}"
+}
+
 fetch_corpus() {
   "$ENV_PY" scripts/fetch_corpus.py --tier "$CORPUS_TIER" || return 1
   "$ENV_PY" scripts/fetch_corpus.py --tier "$CORPUS_TIER" --verify || return 1
@@ -222,6 +249,11 @@ fetch_real_data() {
 # --- lanes --------------------------------------------------------------------
 lane_corpus() {
   fetch_corpus || return 1
+  ensure_cfitsio_build_deps || return 1
+  # Build the oracle explicitly: if it cannot be built the tests skip, and a
+  # skipped oracle is the one outcome this lane must never report as a pass.
+  echo "--- building the pure-CFITSIO value oracle"
+  "$ENV_PY" scripts/build_cfitsio_oracle.py || return 1
   pytest_lane tests/test_corpus_manifest.py tests/test_corpus_parity.py \
     tests/test_operation_matrix.py tests/test_write_parity.py \
     tests/test_cfitsio_oracle.py tests/test_astropy_corpus_diff.py
@@ -342,6 +374,7 @@ lane_cfitsio_direct() {
     echo "FAIL: ${TF_DIR} has no vendored CFITSIO"
     return 1
   fi
+  ensure_cfitsio_build_deps || return 1
   ln -sfn "${TF_DIR}/extern" "${REPO_ROOT}/extern"
   "$ENV_PY" benchmarks/run_cfitsio_direct_bench.py
 }
