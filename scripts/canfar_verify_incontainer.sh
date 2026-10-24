@@ -44,30 +44,7 @@ cd "$REPO_ROOT"
 # The image ships some pixi, but pixi.toml pins one. Fetch the pinned release
 # into scratch instead of self-updating: the image's pixi lives in a read-only
 # prefix, and `requires-pixi` otherwise refuses to run at all.
-use_pinned_pixi() {
-  local want have arch dir
-  want="$(sed -n 's/^requires-pixi *= *"==\([^"]*\)".*/\1/p' pixi.toml | head -1)"
-  if [[ -z "${want}" ]]; then
-    return 0
-  fi
-  have="$(pixi --version 2>/dev/null | awk '{print $2}')"
-  if [[ "${have}" == "${want}" ]]; then
-    return 0
-  fi
-  case "$(uname -m)" in
-    x86_64) arch=x86_64 ;;
-    aarch64 | arm64) arch=aarch64 ;;
-    *) echo "FAIL: unsupported arch $(uname -m) for the pixi download" >&2; return 1 ;;
-  esac
-  dir="${SCRATCH}/pixi-${want}"
-  mkdir -p "$dir"
-  echo "pixi ${have:-missing} != pinned ${want}; fetching v${want} into ${dir}"
-  curl -fsSL --retry 3 -o "${dir}/pixi" \
-    "https://github.com/prefix-dev/pixi/releases/download/v${want}/pixi-${arch}-unknown-linux-musl"
-  chmod +x "${dir}/pixi"
-  export PATH="${dir}:${PATH}"
-  pixi --version
-}
+. "${REPO_ROOT}/scripts/canfar_pinned_pixi.sh"
 
 # No process substitution: the platform already captures stdout, and a `tee`
 # child is killed as the session tears down, which swallowed the last lines of

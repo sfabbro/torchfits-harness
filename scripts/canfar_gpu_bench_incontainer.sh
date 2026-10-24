@@ -53,6 +53,11 @@ export PIP_CACHE_DIR="${SCRATCH}/pip-cache"
 export TMPDIR="${SCRATCH}/tmp"
 mkdir -p "${PIP_CACHE_DIR}" "${TMPDIR}"
 
+# The image's pixi can be newer than pixi.toml's pin, and `requires-pixi` then
+# aborts before `pixi install`; put the pinned release on PATH first.
+. "${REPO_ROOT}/scripts/canfar_pinned_pixi.sh"
+use_pinned_pixi
+
 pixi install
 
 # The subject is a torchfits wheel. This checkout does not vendor CFITSIO.
