@@ -304,11 +304,27 @@ def test_convert_table_to_parquet(mef: Path, workdir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _has_table(path: Path) -> bool:
+    with astropy_fits.open(path, memmap=True) as hdul:
+        return any(
+            isinstance(hdu, (astropy_fits.BinTableHDU, astropy_fits.TableHDU))
+            for hdu in hdul
+        )
+
+
 def _corpus_file(family: str) -> Path:
     for source in corpus.sources(tier=os.environ.get("TORCHFITS_CORPUS_TIER", "ci")):
-        files = corpus.source_files(source)
-        if family in corpus.families(source) and files and files[0].is_file():
-            return files[0]
+        if family not in corpus.families(source):
+            continue
+        for path in corpus.source_files(source):
+            if not path.is_file():
+                continue
+            # A source declares families collectively (the astropy regression
+            # corpus ships images and tables), so the first present file can be
+            # the wrong shape; pick one that really carries the family asked for.
+            if family == "table" and not _has_table(path):
+                continue
+            return path
     pytest.skip(f"no {family} corpus file is present; run `pixi run corpus-fetch`")
 
 
